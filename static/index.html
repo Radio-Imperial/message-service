@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="favicon.png">
+
+    <title>Gerenciador de Mensagens</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/style.css" rel="stylesheet">
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="/static/css/dataTables.bootstrap.css">
+
+  </head>
+
+  <body>
+
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Gerenciador de Mensagens</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        &nbsp;
+        <div class="row">
+          <div class="span12">
+            <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="mensagens" width="100%">
+              <thead>
+                  <tr>
+                      <th>IP</th>
+                      <th>Data</th>
+                      <th>Nome</th>
+                      <th>Cidade</th>
+                      <th>Mensagem</th>
+                      <th>E-Mail</th>
+                      <th></th>
+                  </tr>
+              </thead>
+              <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      &nbsp;
+      <div class="row">
+          <div class="span12">
+              <div class="btn-toolbar" style="margin: 0;">
+                <a href="#" class="btn btn-primary"><span class="glyphicon glyphicon-refresh"></span> Atualizar</a>
+                <a href="#" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Apagar Todas</a>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Desenvolvido por <a href="http://overloaded.io/">Martin Spier</a>. &copy; 2013 Martin Spier.</p>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+    <script src="/static/js/dataTables.bootstrap.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $('#mensagens').dataTable({
+          "sAjaxSource": '/message/list',
+          "oLanguage": {
+            "sProcessing":   "Processando...",
+            "sLengthMenu":   "Mostrar _MENU_ registros",
+            "sZeroRecords":  "Não foram encontrados resultados",
+            "sInfo":         "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+            "sInfoEmpty":    "Mostrando de 0 até 0 de 0 registros",
+            "sInfoFiltered": "(filtrado de _MAX_ registros no total)",
+            "sInfoPostFix":  "",
+            "sSearch":       "",
+            "sUrl":          "",
+            "oPaginate": {
+              "sFirst":    "Primeiro",
+              "sPrevious": "Anterior",
+              "sNext":     "Seguinte",
+              "sLast":     "Último"
+            }
+          },
+          "fnPreDrawCallback": function(oSettings, json) {
+            $('.dataTables_filter input').addClass('form-control input-sm');
+            $('.dataTables_filter input').css('width', '200px');
+            $('.dataTables_length select').addClass('form-control input-sm');
+            $('.dataTables_length select').css('width', '75px');
+            $('.dataTables_filter input').attr('placeholder', 'Buscar');
+          },
+          "aoColumnDefs": [
+            {
+                "mRender": function ( data, type, row ) {
+                    return '<button type="button" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span></button>';
+                },
+                "aTargets": [ 6 ]
+            },
+            { 'bSortable': false, 'aTargets': [ 6 ] }
+          ]
+        });
+      });
+    </script>
+  </body>
+</html>
