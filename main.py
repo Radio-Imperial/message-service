@@ -1,61 +1,83 @@
 import os
 import sys
+import logging
+from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 sys.path.insert(1, os.path.join(os.path.abspath('.'), 'lib'))
 
-from flask import Flask
-from flask.ext import restful
+from flask import Flask, request, jsonify
+from flask.ext.restful import Api, Resource, abort
 from models import MessageModel
 
 app = Flask(__name__)
-api = restful.Api(app)
+api = Api(app)
 
 
-class Message(restful.Resource):
-    def get(self, message_id):
-        return {'hello': 'world'}
-
-
-class MessageList(restful.Resource):
+class Message(Resource):
     def get(self):
-        return {
-            "aaData": [
-                [
-                    "10.10.10.10",
-                    "1/1/1",
-                    "Tester",
-                    "Aqui",
-                    "Mensagem",
-                    "tester@tester",
-                    "10",
-                ],
-                [
-                    "10.10.10.10",
-                    "1/1/1",
-                    "Tester",
-                    "Aqui",
-                    "Mensagem",
-                    "tester@tester",
-                    "10",
-                ],
-                [
-                    "10.10.10.10",
-                    "1/1/1",
-                    "Tester",
-                    "Aqui",
-                    "Mensagem",
-                    "tester@tester",
-                    "10",
-                ]
-            ]
-        }
+        message_id = request.values.get('id', None)
+        if message_id is None:
+            abort(400, message="Bad Request. Message 'id' was not provided.")
+        message = MessageModel.get_by_id(int(message_id))
+        if message is None:
+            abort(404, message="Message '%s' was not found." % message_id)
+        return jsonify(message=message.to_dict())
+
+    def delete(self):
+        message_id = request.values.get('id', None)
+        if message_id is None:
+            abort(400)
+        message = MessageModel.get_by_id(int(message_id))
+        if message is None:
+            abort(404, message="Message '%s' was not found." % message_id)
+        message.key.delete()
+        return jsonify(message="Message '%s' was deleted successfully." % message_id)
+
+    def post(self):
+        ip = request.remote_addr
+        name = request.values.get('name', None)
+        city = request.values.get('city', None)
+        email = request.values.get('email', None)
+        message = request.values.get('message', None)
+        new_message = MessageModel(
+            ip=ip,
+            name=name,
+            city=city,
+            email=email,
+            message=message
+        )
+        try:
+            new_message.put()
+        except CapabilityDisabledError:
+            logging.error(u'App Engine Datastore is currently in read-only mode.')
+            abort(500)
+        return jsonify(id=new_message.key.id())
 
 
-class Warmup(restful.Resource):
+class MessageList(Resource):
+    def get(self):
+        max = 500
+        query = MessageModel.query().order(-MessageModel.date)
+        messages = query.fetch(max)
+        aaData = []
+        for message in messages:
+            aaData.append({
+                "ip": message.ip,
+                "date": message.date,
+                "name": message.name,
+                "city": message.city,
+                "message": message.message,
+                "email": message.email,
+                "id": message.key.id()
+            })
+        return jsonify(aaData=aaData)
+
+
+class Warmup(Resource):
     def get(self):
         return ''
 
-api.add_resource(Message, '/message/<string:message_id>')
+api.add_resource(Message, '/message')
 api.add_resource(MessageList, '/message/list')
 api.add_resource(Warmup, '/_ah/warmup')
 

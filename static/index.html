@@ -68,12 +68,31 @@
       <div class="row">
           <div class="span12">
               <div class="btn-toolbar" style="margin: 0;">
-                <a href="#" class="btn btn-primary"><span class="glyphicon glyphicon-refresh"></span> Atualizar</a>
-                <a href="#" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Apagar Todas</a>
+                <button class="btn btn-primary" onclick="javascript:refreshMessages();"><span class="glyphicon glyphicon-refresh"></span> Atualizar</button>
+                <a data-toggle="modal" href="#deleteAllModal" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Apagar Todas</a>
               </div>
           </div>
         </div>
       </div>
+
+        <div class="modal fade" id="deleteAllModal" tabindex="-1" role="dialog" aria-labelledby="deleteAllModal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Apagar Todas Mensagens?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Você tem certeza que deseja apagar todas mensagens?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-danger" onclick="javascript:deleteMessage('all');"><span class="glyphicon glyphicon-trash"></span> Confirmar</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
     </div>
 
     <div id="footer">
@@ -82,7 +101,6 @@
       </div>
     </div>
 
-
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
@@ -90,10 +108,39 @@
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
     <script src="/static/js/dataTables.bootstrap.js"></script>
+    <script src="/static/js/dataTables.fnReloadAjax.js"></script>
     <script type="text/javascript">
+      function deleteMessage(id) {
+          var oTable = $('#mensagens').dataTable();
+          $.ajax({
+              type: "DELETE",
+              url: "/message",
+              data: {id: id},
+              complete: function() {
+                  setTimeout(function() {
+                      oTable.fnReloadAjax();
+                  }, 500); // Waiting 500ms until the delete is active on the database
+              }
+          });
+      }
+
+      function refreshMessages() {
+          var oTable = $('#mensagens').dataTable();
+          oTable.fnReloadAjax();
+      }
+
       $(document).ready(function() {
         $('#mensagens').dataTable({
           "sAjaxSource": '/message/list',
+          "aoColumns": [
+              { "mData": "ip" },
+              { "mData": "date" },
+              { "mData": "name" },
+              { "mData": "city" },
+              { "mData": "message" },
+              { "mData": "email" },
+              { "mData": "id" }
+          ],
           "oLanguage": {
             "sProcessing":   "Processando...",
             "sLengthMenu":   "Mostrar _MENU_ registros",
@@ -121,7 +168,7 @@
           "aoColumnDefs": [
             {
                 "mRender": function ( data, type, row ) {
-                    return '<button type="button" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash"></span></button>';
+                    return '<button type="button" class="btn btn-danger btn-sm" onclick="javascript:deleteMessage(' + data + ');"><span class="glyphicon glyphicon-trash"></span></button>';
                 },
                 "aTargets": [ 6 ]
             },
