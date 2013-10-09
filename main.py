@@ -26,11 +26,22 @@ class Message(Resource):
     def delete(self):
         message_id = request.values.get('id', None)
         if message_id is None:
-            abort(400)
-        message = MessageModel.get_by_id(int(message_id))
-        if message is None:
+            abort(400, message="Please provide a message id.")
+        try:
+            id = int(message_id)
+            messages = MessageModel.get_by_id(id)
+        except ValueError:
+            if message_id == 'all':
+                messages = MessageModel.query().fetch(500)
+            else:
+                abort(400, message="Id should be a number.")
+        if messages is None:
             abort(404, message="Message '%s' was not found." % message_id)
-        message.key.delete()
+        if type(messages) is list:
+            for message in messages:
+                message.key.delete()
+        else:
+            messages.key.delete()
         return jsonify(message="Message '%s' was deleted successfully." % message_id)
 
     def post(self):
