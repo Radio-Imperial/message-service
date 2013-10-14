@@ -5,9 +5,11 @@ from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 sys.path.insert(1, os.path.join(os.path.abspath('.'), 'lib'))
 
-from flask import Flask, request, jsonify
+import json
+from flask import Flask, request
 from flask.ext.restful import Api, Resource, abort
 from models import MessageModel
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -21,7 +23,7 @@ class Message(Resource):
         message = MessageModel.get_by_id(int(message_id))
         if message is None:
             abort(404, message="Message '%s' was not found." % message_id)
-        return jsonify(message=message.to_dict())
+        return {'message': message.to_dict()}
 
     def delete(self):
         message_id = request.values.get('id', None)
@@ -31,7 +33,7 @@ class Message(Resource):
         if message is None:
             abort(404, message="Message '%s' was not found." % message_id)
         message.key.delete()
-        return jsonify(message="Message '%s' was deleted successfully." % message_id)
+        return {'message': "Message '%s' was deleted successfully." % message_id}
 
     def post(self):
         ip = request.remote_addr
@@ -51,7 +53,7 @@ class Message(Resource):
         except CapabilityDisabledError:
             logging.error(u'App Engine Datastore is currently in read-only mode.')
             abort(500)
-        return jsonify(id=new_message.key.id())
+        return {'id': new_message.key.id()}, 200, {'Access-Control-Allow-Origin': '*'}
 
 
 class MessageList(Resource):
@@ -63,14 +65,14 @@ class MessageList(Resource):
         for message in messages:
             aaData.append({
                 "ip": message.ip,
-                "date": message.date,
+                "date": message.date.isoformat(),
                 "name": message.name,
                 "city": message.city,
                 "message": message.message,
                 "email": message.email,
                 "id": message.key.id()
             })
-        return jsonify(aaData=aaData)
+        return {'aaData': aaData}
 
 
 class Warmup(Resource):

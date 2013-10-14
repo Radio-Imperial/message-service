@@ -16,3 +16,14 @@ class MessageModel(ndb.Model):
     city = ndb.StringProperty(required=True)
     email = ndb.StringProperty(required=True)
     message = ndb.TextProperty(required=True)
+
+    def to_dict(self):
+        result = {
+            'ip': self.ip,
+            'date': self.date.isoformat(),
+            'name': self.name,
+            'city': self.city,
+            'email': self.email,
+            'message': self.message
+        }
+        return result
