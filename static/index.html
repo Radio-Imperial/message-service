@@ -114,12 +114,11 @@
           var oTable = $('#mensagens').dataTable();
           $.ajax({
               type: "DELETE",
-              url: "/message",
-              data: {id: id},
+              url: "/message?id=" + id,
               complete: function() {
                   setTimeout(function() {
                       oTable.fnReloadAjax();
-                  }, 500); // Waiting 500ms until the delete is active on the database
+                  }, 1000); // Waiting 1s until the delete is active on the database
               }
           });
       }
