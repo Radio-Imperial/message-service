@@ -1,4 +1,4 @@
 message-service
 ===============
 
-REST Messaging Service with a Bootstrap themed reading panel.
+Google App Engine REST Messaging service based on Flask-RESTful and Twitter Bootstrap.
